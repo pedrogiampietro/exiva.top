@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-deusold}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-deusold}
+      POSTGRES_DB: ${POSTGRES_DB:-deusold}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-deusold}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dashboard:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-deusold}:${POSTGRES_PASSWORD:-deusold}@db:5432/${POSTGRES_DB:-deusold}
+    ports:
+      - "${DASHBOARD_PORT:-8501}:8501"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  collector:
+    build: .
+    restart: unless-stopped
+    command: ["python", "-m", "deusold.scheduler"]
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-deusold}:${POSTGRES_PASSWORD:-deusold}@db:5432/${POSTGRES_DB:-deusold}
+      FREQUENT_MINUTES: ${FREQUENT_MINUTES:-15}
+      WORLD_FILTER: ${WORLD_FILTER:-1}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/
+.venv/
+.env
+.streamlit/secrets.toml
+scratch_streamlit*.log

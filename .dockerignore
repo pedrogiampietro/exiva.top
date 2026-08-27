@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+data/
+.venv/
+.env
+.git/
+scripts/
+scratch_streamlit*.log
+README.md
+DEPLOY.md
